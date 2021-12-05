@@ -1,0 +1,11 @@
+# This is the configuration file for bochs
+# bochs is an operating system simulator that lets you define the 
+# hardware specifications to run your operating system ON
+
+# telling bochs to load the boot sector in a floppy disk
+# this is like having a floppy disk inserted into a make-believe machine
+# and when the BIOS checks for boot devices, it will see a floppy disk with
+# a proper boot sector 
+
+floppya: 1_44=boot/boot_sect.bin, status=inserted
+boot: a
