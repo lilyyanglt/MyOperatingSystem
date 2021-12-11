@@ -1,42 +1,40 @@
-; our boot sector
-; this code attempts to print hi lily using the BIOS 
-; routine of accessing the display when BIOS printed something to the screen
+; source: Nick Blundell's book
+; The following code demonstrates how to read some sectors
+; from the boot disk using our disk_load.asm file
 
-bits 16
-;[org 0x7c00]          ; the org directive means origin and it sets
+[org 0x7c00]
 
-mov ah, 0x0e            ; according to wikipedia, to use teletype mode
-                        ; you set ah to 0x0e, and al to an ASCII code of the character
-; First attempt
-mov al, [the_secret]
-int 0x10                ; Does this print an X? no this doesn't because by default it's offset from the 
-                        ; top of the memory or bottom...anyways, it's somewhere at the beginner of memory.
+mov [BOOT_DRIVE], dl    ; BIOS stores our boot drive in DL, so it's best to remember this for later
+                        ; so we remember it by putting the value inside the byte we reserved under
+                        ; the BOOT_DRIVE label
 
-; Third attempt
-mov bx, 0x7c0           ; this works because the_secret is now offset from 0x07c0
-mov ds, bx              ; this prints X because by default it's offset from data segment based on ds register value
-mov al, [the_secret]
-int 0x10                
+mov bp, 0x8000          ; setting up our stack out of the way
+mov sp, bp
 
-mov al, [es:the_secret] ; tell the CPU to use the es (not ds) segment
-int 0x10                ; this does not print X because es is not a data segment so you will print out garbage value
+mov bx, 0x9000          ; load 5 sectors to 0x0000(es):0x9000 (so recall)
+mov dh, 5               ; that the cpu calculates the absolute physical
+mov dl, [BOOT_DRIVE]    ; address is 0x0000 * 16 + 0x9000 (which means 0x9000)
+call disk_load          
 
-; Fourth attempt
-mov bx, 0x7c0
-mov es, bx
-mov al, [es:the_secret]
-int 0x10                ; Does this print an X? yes it does, because
-                        ; we are saying that we want the_secret to offset from es
-                        ; and es has been set to a segment we specify
-                        ; although visually i still don't know how this works
+mov dx, [0x9000 + 512]  ; also, print the first word from the 2nd loaded 
+call print_hex          ; sector; should be 0xface
 
-jmp $                   ; jumps to current address
+mov dx, [0x9000]        ; should be the second sector that's loaded 
+call print_hex          ; which should have the value of 0xdada
 
-; this label represents us putting a byte of data in memory
-the_secret:
-  db "X"
+jmp $
 
+%include "./boot/disk_load.asm"
+%include "./boot/printing_hex.asm"
+
+; global variables
+BOOT_DRIVE: db 0
+
+; first boot sector padding
 times 510-($-$$) db 0
+dw 0xaa55 
 
-dw 0xaa55              
+; code for the second sector and third sector
+times 256 dw 0xdada     ; filling up the second sector with 256 words (16 bite) with 0xdada
+times 256 dw 0xface     ; filling up the third sector with 256 words with 0xface
 

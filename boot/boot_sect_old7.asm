@@ -1,5 +1,11 @@
-; our print string function
-; source: https://gist.github.com/kthompson/957c635d84b7813945aa9bb649f039b9
+; source: 
+[org 0x7c00]
+
+  mov dx, 0x1fb7    ; Set the value we want to print to dx
+  call print_hex    ; Print the hex value
+  jmp $             ; Hang once we're done
+
+%include "./boot/printing_string.asm"
 
 ; Prints the value of DX as hex.
 print_hex:
@@ -42,4 +48,8 @@ print_hex_done:
   ret               ; return the function
 
 HEX_OUT: db '0x0000', 0
-    
+
+; Padding and magic number
+
+  times 510-($-$$) db 0
+  dw 0xaa55
