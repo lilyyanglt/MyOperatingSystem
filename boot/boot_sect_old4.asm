@@ -1,9 +1,10 @@
 ; our boot sector
-; this code attempts to print hi lily using the BIOS 
-; routine of accessing the display when BIOS printed something to the screen
+; this is for testing our print string function
+; I had written the code myself for printing the string
 
 bits 16
-[org 0x7c00]          ; the org directive means origin and it sets
+[org 0x7c00]          ; the org directive means origin and it sets the data segment to 
+                      ; offset from where our bootloader code is at
 
 mov bx, HELLO_MESSAGE
 call print_string

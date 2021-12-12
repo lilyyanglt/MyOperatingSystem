@@ -1,6 +1,6 @@
 ; our boot sector
-; this code attempts to print hi lily using the BIOS 
-; routine of accessing the display when BIOS printed something to the screen
+; this code attempts to explore with the stack pointers and printing
+; values we poped off the stack
 
 bits 16
 ; [org 0x7c00]          ; the org directive means origin and it sets
