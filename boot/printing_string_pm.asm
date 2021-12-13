@@ -5,7 +5,7 @@
 ; for now, it achieves our purpose of replacing the BIOS routine
 
 
-bits 32
+[bits 32]
 
 ; define constants
 VIDEO_MEMORY equ 0xb8000

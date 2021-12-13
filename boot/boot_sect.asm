@@ -1,42 +1,45 @@
 ; source: Nick Blundell's book
-; The following code demonstrates how to read some sectors
-; from the boot disk using our disk_load.asm file
+; putting everything we learn together
+; we are going to switch to 32 bit mode
+; also we will use the video memory to print
+; some character onto the screen
+; so this is a boot sector that will enter 32-bit 
+; protected mode
 
+[bits 16]
 [org 0x7c00]
 
-mov [BOOT_DRIVE], dl    ; BIOS stores our boot drive in DL, so it's best to remember this for later
-                        ; so we remember it by putting the value inside the byte we reserved under
-                        ; the BOOT_DRIVE label
-
-mov bp, 0x8000          ; setting up our stack out of the way
+; set up our stack
+mov bp, 0x9000
 mov sp, bp
 
-mov bx, 0x9000          ; load 5 sectors to 0x0000(es):0x9000(bx) (so recall that the physical address is going to be 0x00000 + 0x9000 becomes)
-                        ; 0x09000 which is where our es segment is started for the disk sectors to be loaded
-                        ; if you don't include this, you won't be able to find where the disk sectors are loaded into
-mov dh, 5               ; that the cpu calculates the absolute physical
-mov dl, [BOOT_DRIVE]    ; address is 0x0000 * 16 + 0x9000 (which means 0x9000)
-call disk_load          
+mov bx, MSG_REAL_MODE
+call print_string
 
-mov dx, [0x9000 + 512]  ; also, print the first word from the 2nd loaded 
-call print_hex          ; sector; should be 0xface
-
-mov dx, [0x9000]        ; should be the second sector that's loaded 
-call print_hex          ; which should have the value of 0xdada
+call switch_to_pm   ; note that there's not going to be return to this function
 
 jmp $
 
-%include "./boot/disk_load.asm"
-%include "./boot/printing_hex.asm"
+%include "./boot/printing_string.asm"
+%include "./boot/printing_string_pm.asm"
+%include "./boot/gdt.asm"
+%include "./boot/switch_to_pm.asm"
 
-; global variables
-BOOT_DRIVE: db 0
+[bits 32]
+
+BEGIN_PM:
+    mov ebx, MSG_PROT_MODE
+    call print_string_pm
+
+    jmp $
+
+; Global variables
+MSG_REAL_MODE:
+    db "Started in 16-bit Real Mode", 0
+
+MSG_PROT_MODE: 
+    db "Successfully landed in 32-bit Protected Mode", 0
 
 ; first boot sector padding
 times 510-($-$$) db 0
 dw 0xaa55 
-
-; code for the second sector and third sector
-times 256 dw 0xdada     ; filling up the second sector with 256 words (16 bite) with 0xdada
-times 256 dw 0xface     ; filling up the third sector with 256 words with 0xface
-
