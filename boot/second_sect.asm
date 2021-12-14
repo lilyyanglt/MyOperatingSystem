@@ -1,0 +1,1 @@
+times 256 dw 0xdada     ; filling up the second sector with 256 words (16 bite) with 0xdada
