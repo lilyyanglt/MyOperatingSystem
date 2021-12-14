@@ -5,3 +5,8 @@ Personal project trying to build an operating system from the ground by followin
 My goal is to learn enough from this book and then start building on top of it with other features.
 
 
+# Important note
+
+* When compiling the image by running `cat boot_sect.bin kernel.bin > os-image`
+* the order is very important, if you switched the order of kernel.bin and then boot_sect.bin in your os-image, the first sector would be the kernel, 
+* so you'll run into the issue of boot disk not found.

@@ -36,7 +36,5 @@ disk_error:
     call print_string
     jmp $
 
-%include "./boot/printing_string.asm"
-
 DISK_ERROR_MESSAGE:
     db "disk read error!", 0

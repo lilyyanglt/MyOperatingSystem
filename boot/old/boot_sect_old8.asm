@@ -14,6 +14,7 @@ mov sp, bp
 mov bx, 0x9000          ; load 5 sectors to 0x0000(es):0x9000(bx) (so recall that the physical address is going to be 0x00000 + 0x9000 becomes)
                         ; 0x09000 which is where our es segment is started for the disk sectors to be loaded
                         ; if you don't include this, you won't be able to find where the disk sectors are loaded into
+
 mov dh, 5               ; that the cpu calculates the absolute physical
 mov dl, [BOOT_DRIVE]    ; address is 0x0000 * 16 + 0x9000 (which means 0x9000)
 call disk_load          
@@ -28,6 +29,7 @@ jmp $
 
 %include "./boot/disk_load.asm"
 %include "./boot/printing_hex.asm"
+%include "./boot/printing_string.asm"
 
 ; global variables
 BOOT_DRIVE: db 0
