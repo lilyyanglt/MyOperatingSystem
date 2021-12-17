@@ -10,9 +10,10 @@ My goal is to learn enough from this book and then start building on top of it w
 * TODO: provide Vagrant file with provisioning instructions
 * Development of this was done in a virtual machine using Ubuntu 20.04
 
-1. In the root directory of this repo, run `make` - this builds all the necessary files for simulation to start
-2. Then start simulation using bochs `make run`
-3. Once completed, you can run `make clean` to clean up all the files
+1. run start.sh to install all dependencies
+2. In the root directory of this repo, run `make` - this builds all the necessary files for simulation to start
+3. Then start simulation using bochs `make run`
+4. Once completed, you can run `make clean` to clean up all the files
 
 # Problems Encountered During Development and Troubleshooting Steps
 
