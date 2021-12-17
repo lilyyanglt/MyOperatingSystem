@@ -49,7 +49,7 @@ load_kernel:
     ; boot sector 2) from the boot disk to address KERNEL_OFFSET
     
     mov bx, KERNEL_OFFSET
-    mov dh, 30
+    mov dh, 15
     mov dl, [BOOT_DRIVE]
     call disk_load           
 

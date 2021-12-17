@@ -11,13 +11,15 @@ My goal is to learn enough from this book and then start building on top of it w
 * the order is very important, if you switched the order of kernel.bin and then boot_sect.bin in your os-image, the first sector would be the kernel, 
 * so you'll run into the issue of boot disk not found.
 
-# Problem
+# Problems and Troubleshooting Steps
 
-1. After combining kernel.bin and boot_sect.bin into an os-image binary, bochs cannot find a disk to boot with error *no bootable device*
+## Problem 1
+
+After combining kernel.bin and boot_sect.bin into an os-image binary, bochs cannot find a disk to boot with error *no bootable device*
 
 See log error file: ./logs/bochsout-121521.txt
 
-## Steps taken to troubleshoot:
+### Steps taken to troubleshoot:
 
 1. Check the resulting os-image binary using `od -t x1 -A n os-image`
 
@@ -149,10 +151,29 @@ if I had used `ndisasm -b 32 kernel.bin > kernel.dis`, then the file would have 
 ...
 ```
 
-## Next steps
+### Next steps
 
 I don't want to spend any more time on this for now because my focus is to learn operating system concepts, but based on the troubleshooting so far, I need to better understand the following:
 
 * How to create an image using genisoimage without using floppy disk? 
 * Why was it that linker is doing that when I disassemble the resulting kernel.bin had a lot of `add` instructions which resulted in that heavy size file. 
 * Learn more about gcc compiler and the linker as well as different architectures
+
+### Temporary Solution (Dec 16, 2021)
+* After some new discovery, I came across the .elf format that I can use the linker to create instead of creating a binary format. Up to this point, I still don't quite understand why binary format using the linker produced a 4MB file, but because I was able to combine the boot sector code with an elf format file to produce an os-image, the total size was only 13k bytes which is suitable to using a floppy disk. Here are my manual steps that I'll need to automate using a Makefile, but it works! Praise God!
+
+1. Compile my c progams into elf32 format. 
+`gcc -m32 -ffreestanding -c kernel.c -o kernel.o`
+
+2. Compile the assembly code into elf32 format as well that we want to link together with the kernel code into one file 
+`nasm -f elf kernel_entry.asm -o kernel_entry.o`
+
+3. link the 2 output files and product an elf format instead of a binary
+
+`ld -Ttext 0x1000 -melf_i386 kernel_entry.o kernel.o -o kernel.elf`
+
+4. then combine our bootloader and kernel.elf together into an os-image
+
+`cat boot_sect.bin kernel.elf > os-image`
+
+You will notice that this os-image is very small in size. You can also do the same thing without the entry file to test things out first which I have done. 
