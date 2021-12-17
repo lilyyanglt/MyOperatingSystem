@@ -1,1 +1,6 @@
 bochsout.txt
+*.elf 
+*.bin 
+*.dis 
+*.o 
+os-image

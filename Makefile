@@ -1,17 +1,37 @@
-os-image : boot_sect.bin kernel.elf
-	cat boot_sect.bin kernel.elf > os-image
+C_SOURCES=$(wildcard kernel/*.c drivers/*.c)
+HEADERS=$(wildcard kernel/*.h drivers/*.h)
 
-kernel.elf : kernel_entry.o kernel.o
-	ld -Ttext 0x1000 -melf_i386 kernel_entry.o kernel.o -o kernel.elf
+# TODO: Make sources dep on all header files
 
-kernel.o : kernel.c
-	gcc -m32 -ffreestanding -c ./kernel/kernel.c -o kernel.o
+# creates a list of object files to build
+# it replaces the '.c' extension of filenames in C_SOURCES with '.o'
+OBJ=${C_SOURCES:.c=.o}
 
-kernel_entry.o : kernel_entry.asm
-	nasm -f elf ./kernel/kernel_entry.asm -o kernel_entry.o
+# default target build
+all: os-image
 
-boot_sect.bin : boot_sect.asm
-	nasm -f bin ./boot/boot_sect.asm -o boot_sect.bin
+run: all
+	bochs -f bochsrc -q
+
+os-image : boot/boot_sect.bin kernel.elf
+	cat $^ > $@
+
+kernel.elf : kernel/kernel_entry.o ${OBJ}
+	ld -Ttext 0x1000 -melf_i386 $^ -o $@
+
+# Generic rule for compiling C code to an object file
+# For simplicity, we C files depend on all header files
+%.o : %.c ${HEADERS}
+	gcc -m32 -ffreestanding -c $< -o $@
+
+# Assemble kernel entry
+%.o : %.asm
+	nasm -f elf $< -o $@
+
+# building our boot sector
+%.bin : %.asm
+	nasm -f bin $< -I '../../16bit/' -o $@
 
 clean:
-	rm *.bin *.o
+	rm -rf *.elf *.bin *.dis *.o os-image
+	rm -rf kernel/*.o boot/*.bin drivers/*.o

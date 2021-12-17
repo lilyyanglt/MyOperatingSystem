@@ -4,14 +4,17 @@ Personal project trying to build an operating system from the ground by followin
 
 My goal is to learn enough from this book and then start building on top of it with other features.
 
+# install Instructions and System Requirements
 
-# Important note
+* development of this should be done inside a Virtual Machine, highly recommended.
+* TODO: provide Vagrant file with provisioning instructions
+* Development of this was done in a virtual machine using Ubuntu 20.04
 
-* When compiling the image by running `cat boot_sect.bin kernel.bin > os-image`
-* the order is very important, if you switched the order of kernel.bin and then boot_sect.bin in your os-image, the first sector would be the kernel, 
-* so you'll run into the issue of boot disk not found.
+1. In the root directory of this repo, run `make` - this builds all the necessary files for simulation to start
+2. Then start simulation using bochs `make run`
+3. Once completed, you can run `make clean` to clean up all the files
 
-# Problems and Troubleshooting Steps
+# Problems Encountered During Development and Troubleshooting Steps
 
 ## Problem 1
 
