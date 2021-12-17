@@ -4,7 +4,7 @@ Personal project trying to build an operating system from the ground by followin
 
 My goal is to learn enough from this book and then start building on top of it with other features.
 
-# install Instructions and System Requirements
+## Install Instructions and System Requirements
 
 * development of this should be done inside a Virtual Machine, highly recommended.
 * TODO: provide Vagrant file with provisioning instructions
@@ -26,64 +26,65 @@ See log error file: ./logs/bochsout-121521.txt
 
 1. Check the resulting os-image binary using `od -t x1 -A n os-image`
 
-My first check was to make sure the binary file consists of the magic number of 0xaa55 in the last 2 bytes of the first sector because that's how the BIOS finds the boot loader from a drive. I do see it so I am not sure what's wrong. 
+    My first check was to make sure the binary file consists of the magic number of 0xaa55 in the last 2 bytes of the first sector because that's how the BIOS finds the boot loader from a drive. I do see it so I am not sure what's wrong. 
 
 2. I then created a small assembly file and compile it into a binary file to make sure when I did `cat boot_sect.bin boot_sect2.bin > os-image` it didn't corrupt the file
 
-The code inside boot_sect2.asm is as follows taking the tutorial from boot_sect_old8.asm where we added some additional 512 bytes to the end of the file, so I just created a separate file and included the following, and ran `nasm boot_sect2.asm -f bin -o boot_sect2.bin`
+    The code inside boot_sect2.asm is as follows taking the tutorial from boot_sect_old8.asm where we added some additional 512 bytes to the end of the file, so I just created a separate file and included the following, and ran `nasm boot_sect2.asm -f bin -o boot_sect2.bin`
 
-```
-; this just simply creates 256 bytes of 0xdada which comes to a total of 512 bytes
-times 256 dw 0xdada
-```
+    ```
+    ; this just simply creates 512 bytes, with each byte being da.
+    times 256 dw 0xdada
+    ```
 
-When I did this, bochs booted os-image with no problems, so then that means the cat command didn't corrupt the file
+    When I did this, bochs booted os-image with no problems, so then that means the cat command didn't corrupt the file
 
-3. I then read the [dev blog link](https://dev.to/nsadisha/build-your-own-operating-system-1setupbooting-2im3) to perhaps try creating an iso image from the binary file and using the bochsrc config then maybe I could see what's wrong. 
+3. I then read the [dev.to's blog](https://dev.to/nsadisha/build-your-own-operating-system-1setupbooting-2im3) to perhaps try creating an iso image from the binary file and using their bochsrc config then maybe I could see what's wrong. 
 
-So I tried to learn how to create an iso image from a binary file, and found this from [stackoverflow](https://stackoverflow.com/questions/34268518/creating-a-bootable-iso-image-with-custom-bootloader)
+    So I tried to learn how to create an iso image from a binary file, and found this from [stackoverflow](https://stackoverflow.com/questions/34268518/creating-a-bootable-iso-image-with-custom-bootloader)
 
 
-so I followed it and created myos.iso image file, and then using the following bochsrc file and installed bochs-sdl: 
+    so I followed it and created myos.iso image file, and then using the following bochsrc file and installed bochs-sdl: 
 
-```
-    megs:            32
-    display_library: sdl2
-    romimage:        file=/usr/share/bochs/BIOS-bochs-latest
-    vgaromimage:     file=/usr/share/bochs/VGABIOS-lgpl-latest
-    ata0-master:     type=cdrom, path=myos.iso, status=inserted
-    boot:            cdrom
-    log:             bochslog.txt
-    clock:           sync=realtime, time0=local
-    cpu:             count=1, ips=1000000
+    ```
+        megs:            32
+        display_library: sdl2
+        romimage:        file=/usr/share/bochs/BIOS-bochs-latest
+        vgaromimage:     file=/usr/share/bochs/VGABIOS-lgpl-latest
+        ata0-master:     type=cdrom, path=myos.iso, status=inserted
+        boot:            cdrom
+        log:             bochslog.txt
+        clock:           sync=realtime, time0=local
+        cpu:             count=1, ips=1000000
 
-```
+    ```
 
-I first converted the simple boot_sect.bin to iso to test this process out, but then when I tried to do the same for os-image to convert it into iso file, I realized the size is huge - over 4MB! So the commands I did was:
+    I first converted the simple boot_sect.bin to iso to test this process out, and then it worked without issues. But then when I tried to do the same for the eventual os-image to convert it into iso file, I realized the size is huge for the kernel.bin - over 4MB! Here are the commands used in an attempt to convert os-image into an iso file
 
-```
-# I think this is creating a floppy image that's of size (1024 * 5760 ~ 5MB)
-dd if=/dev/zero of=floppy.img bs=1024 count=5760
+    ```
+    # I think this is creating a floppy image that's of size (1024 * 5760 ~ 5MB)
+    dd if=/dev/zero of=floppy.img bs=1024 count=5760
 
-# so this part I believe based on the explanation that I am copying the boot_sect.bin code to the first sector of the floppy.img
-dd if=boot_sect.bin of=floppy.img seek=0 count=1 conv=notrunc
+    # so this part I believe based on the explanation that I am copying the boot_sect.bin code to the first sector of the floppy.img
+    dd if=boot_sect.bin of=floppy.img seek=0 count=1 conv=notrunc
 
-# so I then tried to copy the kernel.bin to the floppy disk
-# so because the first sector is already with the boot_sect.bin, I copy the kernel
-# starting sector 1 and because kernel is about 4MB = 4,000,000 / 512 is about 8184 sectors
-dd if=kernel.bin of=floppy.img seek=1 count=8184 conv=notrunc
+    # so I then tried to copy the kernel.bin to the floppy disk
+    # because the first sector is already with the boot_sect.bin, I copy the kernel
+    # starting at sector 1 and because kernel is about 4MB = 4,000,000 / 512 is about 8184 sectors, i put 8184 as the count value
+    dd if=kernel.bin of=floppy.img seek=1 count=8184 conv=notrunc
 
-# then when I ran the genisoimage command
-genisoimage -quiet -V 'MYOS' -input-charset iso8859-1 -o myos.iso -b floppy.img -hide floppy.img iso/
+    # then i ran thisgenisoimage command to conver to iso image
+    # also created an iso directory first - you'll see the steps in the stackoverflow link
+    genisoimage -quiet -V 'MYOS' -input-charset iso8859-1 -o myos.iso -b floppy.img -hide floppy.img iso/
 
-```
+    ```
 
-However, I got an error but I don't remember what the error said, but it had something to do with the fact that the floppy.img disk is not correct
-Then I went online to check if there's a max size for a floppy disk, and I found that floppy disks can only be 1.44MB or 2.88MB, so essentially I can't copy that many bytes into the floppy disk image. However I didn't get an error from the `dd` commands so it must be me trying to create the iso from floppy is not correct. 
+    However, I got an error but I don't remember what the error said, but it had something to do with the fact that the floppy.img disk is not correct.
+    Then I went online to check if there's a max size for a floppy disk, and I found that floppy disks can only be 1.44MB or 2.88MB, so essentially I can't copy that many bytes into the floppy disk image. However I didn't get an error from the `dd` commands so it must be me trying to create the iso from floppy is not correct. 
 
-4. Then I looked into why was it that a simple .c file to produce the kernel.bin was so huge of 4MB
+4. Then I looked into why compiling a simple .c file into binary was so huge
 
-kernel.c file
+kernel.c file contents
 ```c
 
 void main() {
@@ -91,7 +92,7 @@ void main() {
     *video_memory = 'X'
 }
 ```
-Then this file was compiled into an .o file usingn this command:
+Then this file was compiled into an .o file using this command:
 
 `gcc -ffreestanding -s -c kernel.c -o kernel.o` - which produced a kernel.o file of 1376 bytes
 
@@ -125,7 +126,7 @@ I got something really weird in the dis file:
 continue down to about line 209511 with add [rax],al line...
 
 ```
-if I had used `ndisasm -b 32 kernel.bin > kernel.dis`, then the file would have this, and have exactly the same number of lines, which makes sense because this is using 32 bit registers and the previous uses 64 bit registers, but what's happening after `ret`? *Why is it resuling in so many add lines*:
+if I had used `ndisasm -b 32 kernel.bin > kernel.dis`, then the file would have this, and have exactly the same number of lines, which makes sense because this is using 32 bit registers and the previous uses 64 bit registers, but what's happening after `ret`? *Why is it resulting in so many add lines*:
 
 ```
 00000000  F30F1EFA          rep hint_nop55 edx
@@ -166,17 +167,24 @@ I don't want to spend any more time on this for now because my focus is to learn
 * After some new discovery, I came across the .elf format that I can use the linker to create instead of creating a binary format. Up to this point, I still don't quite understand why binary format using the linker produced a 4MB file, but because I was able to combine the boot sector code with an elf format file to produce an os-image, the total size was only 13k bytes which is suitable to using a floppy disk. Here are my manual steps that I'll need to automate using a Makefile, but it works! Praise God!
 
 1. Compile my c progams into elf32 format. 
-`gcc -m32 -ffreestanding -c kernel.c -o kernel.o`
+    `gcc -m32 -ffreestanding -c kernel.c -o kernel.o`
 
 2. Compile the assembly code into elf32 format as well that we want to link together with the kernel code into one file 
-`nasm -f elf kernel_entry.asm -o kernel_entry.o`
+    `nasm -f elf kernel_entry.asm -o kernel_entry.o`
 
 3. link the 2 output files and product an elf format instead of a binary
 
-`ld -Ttext 0x1000 -melf_i386 kernel_entry.o kernel.o -o kernel.elf`
+    `ld -Ttext 0x1000 -melf_i386 kernel_entry.o kernel.o -o kernel.elf`
 
 4. then combine our bootloader and kernel.elf together into an os-image
 
-`cat boot_sect.bin kernel.elf > os-image`
+    `cat boot_sect.bin kernel.elf > os-image`
 
-You will notice that this os-image is very small in size. You can also do the same thing without the entry file to test things out first which I have done. 
+    You will notice that this os-image is very small in size. You can also do the same thing without the entry file to test things out first which I have done. 
+
+# Resources
+
+* Nick Blundell's book
+* Princeton 318 notes
+* Stackoverflow
+* https://github.com/ajaysa/MyOS_Blundell (for reference only)
