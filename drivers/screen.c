@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "../kernel/util.c"
+#include "../kernel/low_level.c"
 
 void print_char(char character, int col, int row, char attribute_byte) {
     
@@ -33,12 +34,53 @@ void print_char(char character, int col, int row, char attribute_byte) {
 }
 
 int get_screen_offset(int row, int col) {
+    // this is similar to get_cursor, only now we write
+    // bytes to those internal device registers
 
+    port_byte_out(REGISTER_SCREEN_CTRL, 14);
+    port_byte_out(REGISTER_SCREEN_DATA, (unsigned char)(offset >> 8));
+    port_byte_out(REGISTER_SCREEN_CTRL, 15);
+
+    cursor_offset -= 2 * MAX_COLS;
+
+    return cursor_offset;
 }
 
-int get_cursor();
+/*
+    the device uses its control register as an index 
+    to select its internal registers, of which we are interested
+    in:
 
-void set_cursor();
+    reg 14: which is the high byte of the cursor's offset
+    reg 15: which is the low byte of the cursor's offset
+    once the internal register has been selected, we may read or
+    write a byte on the data register
+
+*/
+int get_cursor() {
+    port_byte_out(REGISTER_SCREEN_CTRL, 14);
+    
+    int offset = port_byte_in(REGISTER_SCREEN_DATA) << 8;
+    port_byte_out(REGISTER_SCREEN_CTRL, 15);
+    offset += port_byte_in(REGISTER_SCREEN_DATA);
+
+    /*
+        Since the cursor offset reported by the VGA hardware is the
+        number of characters, we multiply by two to convert it to
+        a character cell offset
+    */
+}
+
+/*
+    this is similar to get_cursor, only now we write bytes to those
+    internal device registers
+*/
+
+void set_cursor(int offset) {
+    offset /= 2; // this convert from cell offset to char offset
+
+
+}
 
 void print_at(char* message, int col, int row) {
     if (col >= 0 && row >= 0) {
