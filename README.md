@@ -1,16 +1,14 @@
 # Building a simple operating system
 
-Personal project trying to build an operating system from the ground by following the [Nick Blundell's book](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) and also using resources from the Princeton course COS318. Although he hasn't completed the book, but it's a great resource to learn more about the system.
-
-My goal is to learn enough from this book and then start building on top of it with other features.
+Personal project trying to build an operating system from the ground by following the [Nick Blundell's book](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) and also using resources from the Princeton course COS318. Although he hasn't completed the book, it's a great resource to learn more about how to develop an operating system and then as I learn more concepts - I would like to be able to add features to existing code.
 
 ## Install Instructions and System Requirements
 
 * development of this should be done inside a Virtual Machine, highly recommended.
-* TODO: provide Vagrant file with provisioning instructions
 * Development of this was done in a virtual machine using Ubuntu 20.04
+* TODO: provide Vagrant file with provisioning instructions
 
-1. run start.sh to install all dependencies
+1. run `./start.sh` to install all dependencies
 2. In the root directory of this repo, run `make` - this builds all the necessary files for simulation to start
 3. Then start simulation using bochs `make run`
 4. Once completed, you can run `make clean` to clean up all the files
@@ -185,7 +183,7 @@ I don't want to spend any more time on this for now because my focus is to learn
 
 # Resources
 
-* Nick Blundell's book
+* [Nick Blundell's book](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
 * Princeton 318 notes
 * Stackoverflow
 * https://github.com/ajaysa/MyOS_Blundell (for reference only)
