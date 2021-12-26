@@ -1,4 +1,4 @@
-# Building a simple operating system
+# Building a simple operating system (WORK IN PROGRESS)
 
 Personal project trying to build an operating system from the ground by following the [Nick Blundell's book](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) and also using resources from the Princeton course COS318. Although he hasn't completed the book, it's a great resource to learn more about how to develop an operating system and then as I learn more concepts - I would like to be able to add features to existing code.
 
